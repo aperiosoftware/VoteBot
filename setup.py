@@ -24,7 +24,7 @@ setup(
     long_description=readme + '\n\n' + readme,
     author="Aperio Software",
     author_email='stuart@aperiosoftware.com',
-    url='https://github.com/Cadair/apebot',
+    url='https://github.com/aperiosoftware/apebot',
     packages=[
         'apebot',
     ],

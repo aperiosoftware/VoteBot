@@ -1,5 +1,5 @@
 
-from .intenter import IntentCaller
+from apebot.intenter import IntentCaller
 
 from matrix_client.client import MatrixClient
 
@@ -16,7 +16,7 @@ class ApeBot:
         # Connect to Matrix
         self.client = MatrixClient("https://matrix.org")
         self.token = self.client.login_with_password(username=username,
-                                                password=password)
+                                                     password=password)
 
         self.room = self.client.join_room(room)
         self.room.add_listener(self.on_message)
@@ -27,10 +27,12 @@ class ApeBot:
         """
         if event['type'] == "m.room.message":
             if event['content']['msgtype'] == "m.text":
+                # Ignore everything the bot says.
                 if event['sender'] != self.username:
-                    self.intent.get_function(event['content']['body'])(room)
-        else:
-            pass
+                    func = self.intent.get_function(event['content']['body'])
+                    # func is None if no intent found.
+                    if func:
+                        func(room)
 
     def listen(self):
         try:

@@ -45,7 +45,7 @@ class IntentCaller:
             return func
         return decorator
 
-    def keyword_trigger(self, keyword, name=None):
+    def register_keyword(self, keyword, name=None):
         """
         Register a single keyword as a command.
         """

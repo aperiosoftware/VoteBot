@@ -5,3 +5,4 @@ __email__ = 'stuart@aperiosoftware.com'
 __version__ = '0.1.0'
 
 from .apebot import ApeBot
+from .protocol import MatrixProtocol

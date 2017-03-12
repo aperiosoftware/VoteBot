@@ -29,6 +29,18 @@ class Protocol(metaclass=abc.ABCMeta):
         Add a callback for a new event.
         """
 
+    @abc.abstractmethod
+    def send_message(self, message):
+        """
+        Send a message.
+        """
+    @abc.abstractmethod
+    def process_event(self, event, callback):
+        """
+        Take a raw protocol event and then call the callback if it's something
+        the bot should read.
+        """
+
 
 class MatrixProtocol(Protocol):
     """
@@ -43,6 +55,8 @@ class MatrixProtocol(Protocol):
                                                      password=password)
 
         self.room = self.client.join_room(room)
+        self.room.add_listener(self.process_event)
+        self.event_callbacks = []
 
     def listen_forever(self):
         try:
@@ -53,4 +67,26 @@ class MatrixProtocol(Protocol):
             self.room.send_text("ApeBot going to sleep")
 
     def add_event_callback(self, callback):
-        self.room.add_listener(callback)
+        """
+        Add a callback to be called on a message event.
+
+        callbacks should have the signature ``call(message, sender)``.
+        """
+        self.event_callbacks.append(callback)
+
+    def send_message(self, message):
+        self.room.send_text(message)
+
+    def _is_message(self, event):
+        if event['type'] == "m.room.message":
+            if event['content']['msgtype'] == "m.text":
+                # Ignore everything the bot says.
+                if event['sender'] != self.username:
+                    return event
+
+    def process_event(self, room, event):
+        if self._is_message(event):
+            for call in self.event_callbacks:
+                call(event['content']['body'], event['sender'])
+
+

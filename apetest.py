@@ -1,16 +1,16 @@
 from apebot.apebot import ApeBot
 
-password = input('Password? ')
-apebot = ApeBot("@apebot:matrix.org", password, "#apebot:matrix.org")
+apebot = ApeBot("@apebot:localhost","apebot",
+                "#apebot2:localhost", "http://localhost:8008")
 
 
 @apebot.intent.register_keyword("hide")
-def hide(room):
+def hide(bot, room):
     room.send_text("ApeBot Hides")
 
 
 @apebot.intent.register_keyword("George")
-def george(room):
+def george(bot, room):
     room.send_text("Hello George")
 
 

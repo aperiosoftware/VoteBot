@@ -1,7 +1,7 @@
 
-from apebot.intenter import IntentCaller
+from .intenter import IntentCaller
 
-from matrix_client.client import MatrixClient
+from .protocol import MatrixProtocol
 
 
 class ApeBot:
@@ -9,36 +9,23 @@ class ApeBot:
     Main runner class for the bot.
     """
 
-    def __init__(self, username, password, room):
+    def __init__(self, username, password, room, server):
         self.intent = IntentCaller()
+        self.protocol = MatrixProtocol(username, password, room, server)
+        self.protocol.add_event_callback(self.on_event)
 
-        self.username = username
-        # Connect to Matrix
-        self.client = MatrixClient("https://matrix.org")
-        self.token = self.client.login_with_password(username=username,
-                                                     password=password)
-
-        self.room = self.client.join_room(room)
-        self.room.add_listener(self.on_message)
-
-    def on_message(self, room, event):
+    def on_event(self, room, event):
         """
         When a message is received this is called.
         """
         if event['type'] == "m.room.message":
             if event['content']['msgtype'] == "m.text":
                 # Ignore everything the bot says.
-                if event['sender'] != self.username:
+                if event['sender'] != self.protocol.username:
                     func = self.intent.get_function(event['content']['body'])
                     # func is None if no intent found.
                     if func:
-                        func(room)
+                        func(self, room)
 
     def listen(self):
-        try:
-            self.client.listen_forever()
-        except KeyboardInterrupt:
-            pass
-        finally:
-            self.room.send_text("ApeBot going to sleep")
-
+        self.protocol.listen_forever()

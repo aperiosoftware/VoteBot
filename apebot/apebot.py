@@ -1,5 +1,5 @@
 from .intenter import IntentCaller
-from .protocol import MatrixProtocol
+from .protocol import MatrixProtocol, IRCProtocol
 
 
 class ApeBot:

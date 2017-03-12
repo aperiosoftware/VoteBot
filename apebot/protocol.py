@@ -1,5 +1,6 @@
 import abc
 
+import pydle
 from matrix_client.client import MatrixClient
 
 
@@ -15,7 +16,7 @@ class Protocol(metaclass=abc.ABCMeta):
 
         username and room should be made into class attributes.
         """
-        self.message_callbacks = []
+        self.event_callbacks = []
 
     @abc.abstractmethod
     def listen_forever(self):
@@ -23,11 +24,13 @@ class Protocol(metaclass=abc.ABCMeta):
         Run a loop listening for events.
         """
 
-    @abc.abstractmethod
     def add_event_callback(self, callback):
         """
-        Add a callback for a new event.
+        Add a callback to be called on a message event.
+
+        callbacks should have the signature ``call(message, sender)``.
         """
+        self.event_callbacks.append(callback)
 
     @abc.abstractmethod
     def send_message(self, message):
@@ -42,12 +45,44 @@ class Protocol(metaclass=abc.ABCMeta):
         """
 
 
+class IRCClient(pydle.Client):
+
+    def on_connect(self):
+         self.join(self.room)
+
+    def on_message(self, source, target, message):
+         self.message_callback(source, target, message)
+
+
+class IRCProtocol(Protocol):
+
+    def __init__(self, username, password, room, server, port=6667, tls=False):
+        super().__init__(username, password, room, server)
+        self.username = username
+        self.room = room
+        self.client = IRCClient('ApeBot')
+        self.client.room = self.room
+        self.client.message_callback = self.process_event
+        self.client.connect(server, port, tls=tls)
+
+    def listen_forever(self):
+        self.client.handle_forever()
+
+    def send_message(self, message):
+        self.client.message(self.room, message)
+
+    def process_event(self, source, target, message):
+        for call in self.event_callbacks:
+            call(message, target)
+
+
 class MatrixProtocol(Protocol):
     """
     A Matrix Protocol wrapper.
     """
 
     def __init__(self, username, password, room, server):
+        super().__init__(username, password, room, server)
         self.username = username
         # Connect to Matrix
         self.client = MatrixClient(server)
@@ -56,7 +91,6 @@ class MatrixProtocol(Protocol):
 
         self.room = self.client.join_room(room)
         self.room.add_listener(self.process_event)
-        self.event_callbacks = []
 
     def listen_forever(self):
         try:
@@ -65,14 +99,6 @@ class MatrixProtocol(Protocol):
             pass
         finally:
             self.room.send_text("ApeBot going to sleep")
-
-    def add_event_callback(self, callback):
-        """
-        Add a callback to be called on a message event.
-
-        callbacks should have the signature ``call(message, sender)``.
-        """
-        self.event_callbacks.append(callback)
 
     def send_message(self, message):
         self.room.send_text(message)

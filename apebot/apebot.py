@@ -1,5 +1,22 @@
-from .intenter import IntentCaller
-from .protocol import MatrixProtocol, IRCProtocol
+from intenter import IntentCaller
+from protocol import MatrixProtocol, IRCProtocol
+
+
+class Poll():
+    """
+    Poll object for storing info about a vote.
+    """
+    def __init__(self, bot, text):
+        self.text = text
+        self.votes = {}
+        self.bot = bot
+        self.fixed = False
+
+    def display(self):
+        outstr = ''
+        for (option, n_votes) in self.votes.items():
+            outstr += '{} | {} {} \n'.format(n_votes, '='*n_votes, option)
+        self.bot.send_message(outstr)
 
 
 class ApeBot:

@@ -93,15 +93,19 @@ class MatrixProtocol(Protocol):
         self.room.add_listener(self.process_event)
 
     def listen_forever(self):
+        self.room.send_text('My name is PyAstroBot! I seek the grail!')
         try:
             self.client.listen_forever()
         except KeyboardInterrupt:
             pass
         finally:
-            self.room.send_text("ApeBot going to sleep")
+            self.room.send_text("PyAstroBot is sneaking away and buggering off...")
 
     def send_message(self, message):
         self.room.send_text(message)
+
+    def send_emote(self, message):
+        self.room.send_emote(message)
 
     def _is_message(self, event):
         if event['type'] == "m.room.message":

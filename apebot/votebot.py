@@ -22,7 +22,7 @@ class Poll():
         self.bot.send_message(outstr)
 
 
-class ApeBot:
+class VoteBot:
     """
     Main runner class for the bot.
     """
@@ -59,7 +59,7 @@ class ApeBot:
 
 
 
-thisbot = ApeBot(MatrixProtocol("@pyastrobot:matrix.org", password, '#pyastro:matrix.org', "https://matrix.org"))
+thisbot = VoteBot(MatrixProtocol("@pyastrobot:matrix.org", password, '#pyastro:matrix.org', "https://matrix.org"))
 
 
 def hide(thisbot, message, sender):
